@@ -59,12 +59,19 @@ BoundingBox* drawPPM(FILE *file, float startX) {
             box[k].pMinY = y;
             box[k].pMaxX = x + 1;
             box[k].pMaxY = y + 1;
-            box[k].end = 0;
+            box[k].tabEnd = 0;
+            box[k].levelEnd = 0;
+
+            // Cases de fin de niveau
+            if (green == 125 || green == 255) {
+                box[k].levelEnd = 1;
+            }
+
             k++;
         }
 
         // Permet de tester la fin du tableau dans le main
-        box[k].end = 1;
+        box[k].tabEnd = 1;
 
         /* Passe d'une colonne à une autre jusqu'à la fin de la ligne puis change de ligne une fois au bout */
         if (x == (width - 1) + startX) {

@@ -8,7 +8,8 @@
 
 typedef struct BoundingBox {
 	float pMinX, pMinY, pMaxX, pMaxY;
-	int end; // utile pour tester la fin du tableau dans le main
+	int tabEnd; // bool : utile pour tester la fin du tableau dans le main
+	int levelEnd; // bool : la case est une case de la ligne d'arrivée 
 } BoundingBox;
 
 

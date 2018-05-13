@@ -91,19 +91,24 @@ int main(int argc, char** argv) {
 
         /* Test les collisions entre le vaisseau et le décor (obstacles) */
         int k = 0;
-        while (bgBox[k].end != 1) {
+        while (bgBox[k].tabEnd != 1) {
             
             int coll = checkCollision(shipBox, bgBox[k]);
             
             if (coll == 1){
-                printf("collision !\n");
+                if (bgBox[k].levelEnd == 1) {
+                    printf("Fin de niveau !\n");
+                    loop = 0;
+                } else {
+                    printf("collision !\n");
+                }                
             }
 
             k++;
         }        
 
         // Vitesse de déplacement du background
-        bgPosX -= 0.02;
+        bgPosX -= 0.05;
 
         // Libère les mémoires
         free(bgBox); // le malloc était fait dans background.c
