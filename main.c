@@ -18,14 +18,13 @@ static const unsigned int BIT_PER_PIXEL = 32;
 /* Nombre minimal de millisecondes separant le rendu de deux images */
 static const Uint32 FRAMERATE_MILLISECONDS = 1000 / 60;
 
-// Taille du vaisseau : 0.5*0.5
 void drawShip(float x, float y) {
     glBegin(GL_QUADS);
         glColor3ub(150, 100, 250);
         glVertex2f(x, y);
-        glVertex2f(x + 0.5, y);
-        glVertex2f(x + 0.5, y + 0.5);
-        glVertex2f(x, y + 0.5);        
+        glVertex2f(x + TAILLE_VAISSEAU, y);
+        glVertex2f(x + TAILLE_VAISSEAU, y + TAILLE_VAISSEAU);
+        glVertex2f(x, y + TAILLE_VAISSEAU);        
     glEnd();
 }
 
@@ -57,6 +56,8 @@ int main(int argc, char** argv) {
 
     /* Variables vaisseau */
     float shipPosY = 4.5;
+
+    Enemy *enemy = createEnemy();
     
     /* Boucle d'affichage */
     int loop = 1;
@@ -108,7 +109,15 @@ int main(int argc, char** argv) {
         }        
 
         // Vitesse de déplacement du background
-        bgPosX -= 0.05;
+        bgPosX -= VITESSE_DEFILEMENT;
+
+
+        /* Enemies */
+
+        drawEnemy(enemy->posX, enemy->posY);
+        moveEnemy(enemy);
+
+        //free(enemy);
 
         // Libère les mémoires
         free(bgBox); // le malloc était fait dans background.c

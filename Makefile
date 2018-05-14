@@ -3,7 +3,7 @@ CFLAGS   = -Wall -O2 -g
 LIB      = -lSDL -lSDL_image -lGLU -lGL -lm  
 INCLUDES = 
 
-OBJ      = main.o background.o collision.o
+OBJ      = main.o background.o collision.o enemy.o
 RM       = rm -f
 BIN      = jeu
 DIRNAME  = $(shell basename $$PWD)
@@ -30,6 +30,11 @@ background.o : background.c header.h
 
 collision.o : collision.c header.h
 	@echo "compile collision"
+	$(CC) $(CFLAGS) -c $<  
+	@echo "done..."
+
+enemy.o : enemy.c header.h
+	@echo "compile enemy"
 	$(CC) $(CFLAGS) -c $<  
 	@echo "done..."
 
