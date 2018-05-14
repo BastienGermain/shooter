@@ -28,6 +28,8 @@ Enemy* createEnemy() {
 
 void moveEnemy(Enemy *enemy) {
 
+	// CA FAIT UN ZIGZAG !!!
+
 	if (enemy->sens == 1) {
 		enemy->posY += VITESSE_DEFILEMENT*5;
 		if (enemy->posY > 8) {
@@ -41,5 +43,4 @@ void moveEnemy(Enemy *enemy) {
 	}
 	
 	enemy->posX -= VITESSE_DEFILEMENT*1.5;
-
 }
