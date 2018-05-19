@@ -8,8 +8,6 @@
 #define TAILLE_VAISSEAU 0.5
 #define TAILLE_ENEMY 0.5
 
-//static int PIXELS_PAR_BLOC = 40;
-
 typedef struct BoundingBox {
 	float pMinX, pMinY, pMaxX, pMaxY;
 	int tabEnd; // bool : utile pour tester la fin du tableau dans le main (pour le bg)
@@ -20,15 +18,22 @@ typedef struct Enemy {
 	float posX, posY;
 	int sens; // sens du déplacement (1 vers le haut; -1 vers le bas)
 	BoundingBox box;
-} Enemy;
+	struct Enemy *next;
+} Enemy, *EnemyList;
 
+// background
 BoundingBox* drawPPM(FILE *fp, float startX);
 
+// collision
 int checkCollision(BoundingBox box1, BoundingBox box2);
 
+// enemy
 void drawEnemy(float x, float y);
-Enemy* createEnemy();
+void drawEnemies(EnemyList enemy);
+int createEnemy(EnemyList *list);
+void genereEnemy(EnemyList *list);
 void moveEnemy(Enemy *enemy);
-
+void supprimerEnemyFromList(Enemy *toSuppr, EnemyList *list);
+void collEnemies(EnemyList *enemy, BoundingBox box);
 
 #endif

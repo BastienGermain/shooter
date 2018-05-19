@@ -6,11 +6,8 @@ INCLUDES =
 OBJ      = main.o background.o collision.o enemy.o
 RM       = rm -f
 BIN      = jeu
-DIRNAME  = $(shell basename $$PWD)
-BACKUP   = $(shell date +`basename $$PWD`-%m.%d.%H.%M.tgz)
-STDNAME  = $(DIRNAME).tgz
 
-all : $(BIN)
+all : $(BIN) 
 
 $(BIN) : $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(LIB) $(INCLUDES)  -o $(BIN)
@@ -43,11 +40,5 @@ clean :
 	@echo "CLEAN"
 	@echo "**************************"
 	$(RM) *~ $(OBJ) $(BIN) 
-
-tar : clean 
-	@echo "**************************"
-	@echo "TAR"
-	@echo "**************************"
-	cd .. && tar cvfz $(BACKUP) $(DIRNAME)
 
 

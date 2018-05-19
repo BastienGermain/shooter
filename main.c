@@ -51,13 +51,28 @@ int main(int argc, char** argv) {
     /* Titre de la fenêtre */
     SDL_WM_SetCaption("Jeu", NULL);
 
+    /* Varriables des écrans */
+    int mode = 0; /* 0 = menu/accueil; 1 = jeu */
+
     /* Variables background */
     float bgPosX = 0;
 
     /* Variables vaisseau */
     float shipPosY = 4.5;
 
-    Enemy *enemy = createEnemy();
+    /* Créé la bounding box du vaisseau */
+
+    BoundingBox shipBox;
+
+    shipBox.pMinX = 2;
+    shipBox.pMaxX = 2 + TAILLE_VAISSEAU;
+
+    shipBox.pMinY = shipPosY;
+    shipBox.pMaxY = shipPosY + TAILLE_VAISSEAU;
+
+    // Variables enemy
+
+    EnemyList enemies = NULL;
     
     /* Boucle d'affichage */
     int loop = 1;
@@ -79,16 +94,7 @@ int main(int argc, char** argv) {
         /* Dessine le vaisseau */
 
         drawShip(2, shipPosY);
-
-        /* Créé la bounding box du vaisseau */
-
-        BoundingBox shipBox;
-
-        shipBox.pMinX = 2;
-        shipBox.pMaxX = 2.5;
-
-        shipBox.pMinY = shipPosY;
-        shipBox.pMaxY = shipPosY + 0.5;
+        
 
         /* Test les collisions entre le vaisseau et le décor (obstacles) */
         int k = 0;
@@ -101,7 +107,7 @@ int main(int argc, char** argv) {
                     printf("Fin de niveau !\n");
                     loop = 0;
                 } else {
-                    printf("collision !\n");
+                    //printf("collision !\n");
                 }                
             }
 
@@ -114,10 +120,10 @@ int main(int argc, char** argv) {
 
         /* Enemies */
 
-        drawEnemy(enemy->posX, enemy->posY);
-        moveEnemy(enemy);
-
-        //free(enemy);
+        genereEnemy(&enemies);
+        drawEnemies(enemies);
+        moveEnemy(enemies);
+        collEnemies(&enemies, shipBox);
 
         // Libère les mémoires
         free(bgBox); // le malloc était fait dans background.c
@@ -157,10 +163,14 @@ int main(int argc, char** argv) {
         
         if (state[SDLK_UP]) {
             shipPosY += 0.05;
+            shipBox.pMinY = shipPosY;
+            shipBox.pMaxY = shipPosY + TAILLE_VAISSEAU;
         }
 
         if (state[SDLK_DOWN]) {
             shipPosY -= 0.05;
+            shipBox.pMinY = shipPosY;
+            shipBox.pMaxY = shipPosY + TAILLE_VAISSEAU;
         }        
 
         /* Calcul du temps écoulé */
