@@ -9,10 +9,16 @@
 #define TAILLE_ENEMY 0.5
 
 typedef struct BoundingBox {
-	float pMinX, pMinY, pMaxX, pMaxY;
-	int tabEnd; // bool : utile pour tester la fin du tableau dans le main (pour le bg)
-	int levelEnd; // bool : la case est une case de la ligne d'arrivée (pour le bg)
+	float pMinX, pMinY, pMaxX, pMaxY;	
 } BoundingBox;
+
+typedef struct Obstacle {
+	float posX, posY;
+	int r, g, b;
+	BoundingBox box;
+	int levelEnd; // bool : la case est une case de la ligne d'arrivée (pour le bg)
+	struct Obstacle *next;
+} Obstacle, *ObstacleList;
 
 typedef struct Enemy {
 	float posX, posY;
@@ -22,7 +28,11 @@ typedef struct Enemy {
 } Enemy, *EnemyList;
 
 // background
-BoundingBox* drawPPM(FILE *fp, float startX);
+ObstacleList readPPM(FILE *file);
+void drawObstacles(ObstacleList list);
+void moveObstacles(Obstacle *obstacle);
+int collObstacles(ObstacleList *obstacle, BoundingBox box);
+void supprimerObstacleFromList(Obstacle *toSuppr, ObstacleList *list);
 
 // collision
 int checkCollision(BoundingBox box1, BoundingBox box2);
@@ -34,6 +44,6 @@ int createEnemy(EnemyList *list);
 void genereEnemy(EnemyList *list);
 void moveEnemy(Enemy *enemy);
 void supprimerEnemyFromList(Enemy *toSuppr, EnemyList *list);
-void collEnemies(EnemyList *enemy, BoundingBox box);
+int collEnemies(EnemyList *enemy, BoundingBox box);
 
 #endif

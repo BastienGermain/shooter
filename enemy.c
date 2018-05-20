@@ -74,12 +74,12 @@ void moveEnemy(Enemy *enemy) {
 	if (enemy != NULL) {
 		if (enemy->sens == 1) {
 			enemy->posY += VITESSE_DEFILEMENT*5;
-			if (enemy->posY > 8) {
+			if (enemy->posY > 9) {
 				enemy->sens = -1;
 			}
 		} else {
 			enemy->posY -= VITESSE_DEFILEMENT*5;
-			if (enemy->posY < 2){
+			if (enemy->posY < 1){
 				enemy->sens = 1;
 			}
 		}
@@ -136,19 +136,24 @@ void supprimerEnemyFromList(Enemy *toSuppr, EnemyList *list) {
 }
 
 // Gère les collisions avec la liste d'enemy
-void collEnemies(EnemyList *enemy, BoundingBox box) {
+int collEnemies(EnemyList *enemy, BoundingBox box) {
 	EnemyList tmp = *enemy;
+
+	int ret = 0;
 
 	if (tmp != NULL) {
 	
-		int coll = checkCollision(box, tmp->box);
+		int coll = checkCollision(tmp->box, box);
 
 		if (coll == 1) {
-			printf("collision avec enemy\n");
+			//printf("collision avec enemy\n");
 			supprimerEnemyFromList(tmp, enemy);
+			return 1;
 		}
 
-		collEnemies(&tmp->next, box);
+		ret = collEnemies(&tmp->next, box);
 	}
+
+	return ret;
 
 }

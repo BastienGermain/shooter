@@ -55,9 +55,12 @@ int main(int argc, char** argv) {
     int mode = 0; /* 0 = menu/accueil; 1 = jeu */
 
     /* Variables background */
-    float bgPosX = 0;
+    FILE *bg = fopen("bg1.ppm", "r");
+    ObstacleList obstacles = readPPM(bg);
+    fclose(bg);
 
     /* Variables vaisseau */
+    int vies = 3;
     float shipPosY = 4.5;
 
     /* Créé la bounding box du vaisseau */
@@ -73,6 +76,7 @@ int main(int argc, char** argv) {
     // Variables enemy
 
     EnemyList enemies = NULL;
+    int genere = 1; // à 0 on stop la génération d'enemy
     
     /* Boucle d'affichage */
     int loop = 1;
@@ -82,51 +86,78 @@ int main(int argc, char** argv) {
         Uint32 startTime = SDL_GetTicks();
 
         glClear(GL_COLOR_BUFFER_BIT); // Nettoie la fenêtre
+        glClearColor(1, 1, 1, 1); // fond couleur blanc
 
         /* Dessine le background */
-        
-        FILE *bg = fopen("bg1.ppm", "r");
+        moveObstacles(obstacles);
+        drawObstacles(obstacles); 
 
-        BoundingBox *bgBox = drawPPM(bg, bgPosX); // Récup les bounding box des obstacles 
-
-        fclose(bg);
-
-        /* Dessine le vaisseau */
+        /* Vaisseau */
 
         drawShip(2, shipPosY);
-        
-
-        /* Test les collisions entre le vaisseau et le décor (obstacles) */
-        int k = 0;
-        while (bgBox[k].tabEnd != 1) {
-            
-            int coll = checkCollision(shipBox, bgBox[k]);
-            
-            if (coll == 1){
-                if (bgBox[k].levelEnd == 1) {
-                    printf("Fin de niveau !\n");
-                    loop = 0;
-                } else {
-                    //printf("collision !\n");
-                }                
-            }
-
-            k++;
-        }        
-
-        // Vitesse de déplacement du background
-        bgPosX -= VITESSE_DEFILEMENT;
-
+        if (vies == 0) {
+            printf("Perdu !\n");
+        }
 
         /* Enemies */
 
-        genereEnemy(&enemies);
+        if (genere == 1) {
+            genereEnemy(&enemies); // créé de nouveaux enemy aléatoirement
+        }
+        
         drawEnemies(enemies);
         moveEnemy(enemies);
-        collEnemies(&enemies, shipBox);
+        int collEnemy = collEnemies(&enemies, shipBox);   
 
-        // Libère les mémoires
-        free(bgBox); // le malloc était fait dans background.c
+        if (collEnemy == 1) {
+            vies -= 1;
+            printf("nb vies : %d\n", vies);
+        }
+
+        /* Obstacles */
+
+        int collObst = collObstacles(&obstacles, shipBox);   
+
+        if (collObst == 1) {
+            vies -= 1;
+            printf("nb vies : %d\n", vies);
+        } else if (collObst == 2) {
+            printf("Fin de partie !!!\n");
+        }
+
+        ObstacleList tmp = obstacles;
+
+        // Test la présence de la ligne d'arrivée à l'écran pour arrêter la génération d'enemies
+        if (genere != 0) {
+            while (tmp != NULL) {
+                if (tmp->levelEnd == 1) {
+                    if (tmp->box.pMinX < 10) {
+                        genere = 0;
+                        break;
+                    }
+                }
+
+                tmp = tmp->next;
+            }
+        }
+        
+
+        /* Test les collisions vaisseau/bg et enemy/bg */
+            
+            /*int collShip = checkCollision(shipBox, bgBox[k]);
+
+            collEnemies(&enemies, bgBox[k]);
+
+            if (collShip == 1) {
+                bgBox[k].pMaxX = 0;
+                bgBox[k].pMaxY = 0;
+                vies -= 1;
+                printf("nb vies : %d\n", vies);              
+            }*/
+
+                 
+
+             
 
         /* Echange du front et du back buffer : mise à jour de la fenêtre */
         SDL_GL_SwapBuffers();

@@ -5,9 +5,7 @@
 
 #include "header.h"
 
-/* Dessine le background et renvoie un tableau contenant la bounding box de chaque case obstacle */
-BoundingBox* drawPPM(FILE *file, float startX) {
-
+ObstacleList readPPM(FILE *file) {
     int ch;
     int lines = 0;
     int width, height;
@@ -29,59 +27,147 @@ BoundingBox* drawPPM(FILE *file, float startX) {
     /* Parcours du fichier PPM */
 
     int red, green, blue;
-    float x = startX;
+    float x = 0;
     int y = height - 1;
-
-    BoundingBox *box = malloc(sizeof(BoundingBox)*width*height);
-    if (!box) {
-        printf("Erreur allocation\n");
-        return NULL;
-    }
 
     int k = 0;
 
+    Obstacle *list = malloc(sizeof(Obstacle));
+    list = NULL;
+
     while (!feof(file)) {
+        Obstacle *new = malloc(sizeof(Obstacle));
+
         /* Récupère les données rvb pour chaque pixel */
         fscanf(file, "%d\n%d\n%d\n", &red, &green, &blue);
 
-        /* Dessine chaque pixels */
-        glBegin(GL_QUADS);
-            glColor3ub(red, green, blue);
-            glVertex2f(x, y);
-            glVertex2f(x + 1, y);
-            glVertex2f(x + 1, y + 1); 
-            glVertex2f(x, y + 1);            
-        glEnd();
-
         /* On recupère la position de chaque case non-blanche (les obstacles) pour créer les bounding box */
         if (red != 255 || green != 255 || blue != 255){
-            box[k].pMinX = x;
-            box[k].pMinY = y;
-            box[k].pMaxX = x + 1;
-            box[k].pMaxY = y + 1;
-            box[k].tabEnd = 0;
-            box[k].levelEnd = 0;
+
+            new->r = red;
+            new->g = green;
+            new->b = blue;
+
+            new->posX = x;
+            new->posY = y;
+
+            new->box.pMinX = x;
+            new->box.pMinY = y;
+            new->box.pMaxX = x + 1;
+            new->box.pMaxY = y + 1;
+
+            new->levelEnd = 0;
 
             // Cases de fin de niveau
             if (green == 125 || green == 255) {
-                box[k].levelEnd = 1;
+                new->levelEnd = 1;
             }
+
+            new->next = list;
+            list = new; 
 
             k++;
         }
 
-        // Permet de tester la fin du tableau dans le main
-        box[k].tabEnd = 1;
-
         /* Passe d'une colonne à une autre jusqu'à la fin de la ligne puis change de ligne une fois au bout */
-        if (x == (width - 1) + startX) {
+        if (x == width - 1) {
             y -= 1;
-            x = startX;
+            x = 0;
         } else {
             x += 1;
         }
     }
 
-    return box;
+    return list;
+}
 
+
+/* Dessine le background et renvoie un tableau contenant la bounding box de chaque case obstacle */
+void drawObstacles(ObstacleList list) {
+
+    if (list != NULL) {
+
+        glBegin(GL_QUADS);
+            glColor3ub(list->r, list->g, list->b);
+            glVertex2f(list->posX, list->posY);
+            glVertex2f(list->posX + 1, list->posY);
+            glVertex2f(list->posX + 1, list->posY + 1); 
+            glVertex2f(list->posX, list->posY + 1);            
+        glEnd();
+
+        drawObstacles(list->next);
+    }
+}
+
+void moveObstacles(Obstacle *obstacle) {
+
+    if (obstacle != NULL) {
+        
+        obstacle->posX -= VITESSE_DEFILEMENT;
+
+        BoundingBox box;
+
+        box.pMinX = obstacle->posX;
+        box.pMaxX = obstacle->posX + 1;
+
+        box.pMinY = obstacle->posY;
+        box.pMaxY = obstacle->posY + 1;
+
+        obstacle->box = box;
+
+        moveObstacles(obstacle->next);
+    }
+}
+
+int collObstacles(ObstacleList *obstacle, BoundingBox box) {
+    ObstacleList tmp = *obstacle;
+
+    int ret = 0;
+
+    if (tmp != NULL) {
+    
+        int coll = checkCollision(box, tmp->box);
+
+        if (coll == 1) {
+
+            if (tmp->levelEnd == 1) {
+                return 2;
+            } else {
+                supprimerObstacleFromList(tmp, obstacle);
+                return 1;
+            }           
+            
+        }
+
+        ret = collObstacles(&tmp->next, box);
+    }
+
+    return ret;
+
+}
+
+void supprimerObstacleFromList(Obstacle *toSuppr, ObstacleList *list) {
+
+    if (toSuppr == *list){    
+
+        *list = toSuppr->next;
+
+    } else if (toSuppr == (*list)->next) {
+
+        (*list)->next = toSuppr->next;
+
+    } else {
+
+        ObstacleList conserve = *list;
+
+        while (toSuppr != (*list)->next) {
+            *list = (*list)->next; 
+        }
+
+        (*list)->next = toSuppr->next;
+
+        *list = conserve;
+    }
+
+    free(toSuppr);
 }
