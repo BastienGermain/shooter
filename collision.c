@@ -38,3 +38,55 @@ int checkCollision(BoundingBox box1, BoundingBox box2) {
 
 	return 0;
 }
+
+// Gère les collisions entre les enemies et les obstacles
+void collEnemiesObstacles(ObstacleList *obstacle, EnemyList *enemy) {
+    ObstacleList tmp = *obstacle;
+
+    if (tmp != NULL) {
+    
+        int coll = collEnemies(enemy, tmp->box);
+
+        if (coll == 1) {
+            printf("collision avec enemy / décor\n");
+        }
+
+        collEnemiesObstacles(&tmp->next, enemy);
+    }
+
+}
+
+
+void collEnemiesMissiles(MissileList *missile, EnemyList *enemy) {
+    MissileList tmp = *missile;
+
+    if (tmp != NULL) {
+    
+        int coll = collEnemies(enemy, tmp->box);
+
+        if (coll == 1) {
+            printf("collision avec enemy / missile\n");
+            supprimerMissileFromList(tmp, missile);
+        }
+
+        collEnemiesMissiles(&tmp->next, enemy);
+    }
+
+}
+
+void collObstaclesMissiles(MissileList *missile, ObstacleList *obstacle) {
+    MissileList tmp = *missile;
+
+    if (tmp != NULL) {
+    
+        int coll = collObstacles(obstacle, tmp->box);
+
+        if (coll == 1) {
+            printf("collision avec obstacle / missile\n");
+            supprimerMissileFromList(tmp, missile);
+        }
+
+        collObstaclesMissiles(&tmp->next, obstacle);
+    }
+
+}

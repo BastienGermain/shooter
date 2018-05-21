@@ -17,18 +17,7 @@ static const unsigned int BIT_PER_PIXEL = 32;
 
 /* Nombre minimal de millisecondes separant le rendu de deux images */
 static const Uint32 FRAMERATE_MILLISECONDS = 1000 / 60;
-
-void drawShip(float x, float y) {
-    glBegin(GL_QUADS);
-        glColor3ub(150, 100, 250);
-        glVertex2f(x, y);
-        glVertex2f(x + TAILLE_VAISSEAU, y);
-        glVertex2f(x + TAILLE_VAISSEAU, y + TAILLE_VAISSEAU);
-        glVertex2f(x, y + TAILLE_VAISSEAU);        
-    glEnd();
-}
-
-
+ 
 int main(int argc, char** argv) {
     
     /* Initialisation de la SDL */
@@ -60,7 +49,7 @@ int main(int argc, char** argv) {
     fclose(bg);
 
     /* Variables vaisseau */
-    int vies = 3;
+    int lives = 3;
     float shipPosY = 4.5;
 
     /* Créé la bounding box du vaisseau */
@@ -77,6 +66,10 @@ int main(int argc, char** argv) {
 
     EnemyList enemies = NULL;
     int genere = 1; // à 0 on stop la génération d'enemy
+
+    // Variables missile
+    int numbMissiles = MAX_MISSILES;
+    MissileList missiles = NULL;
     
     /* Boucle d'affichage */
     int loop = 1;
@@ -95,7 +88,7 @@ int main(int argc, char** argv) {
         /* Vaisseau */
 
         drawShip(2, shipPosY);
-        if (vies == 0) {
+        if (lives == 0) {
             printf("Perdu !\n");
         }
 
@@ -110,22 +103,26 @@ int main(int argc, char** argv) {
         int collEnemy = collEnemies(&enemies, shipBox);   
 
         if (collEnemy == 1) {
-            vies -= 1;
-            printf("nb vies : %d\n", vies);
+            lives -= 1;
+            printf("nb lives : %d\n", lives);
         }
+
+        drawLives(lives);
 
         /* Obstacles */
 
         int collObst = collObstacles(&obstacles, shipBox);   
 
         if (collObst == 1) {
-            vies -= 1;
-            printf("nb vies : %d\n", vies);
+            lives -= 1;
+            printf("nb lives : %d\n", lives);
         } else if (collObst == 2) {
             printf("Fin de partie !!!\n");
         }
 
         ObstacleList tmp = obstacles;
+
+        collEnemiesObstacles(&obstacles, &enemies);
 
         // Test la présence de la ligne d'arrivée à l'écran pour arrêter la génération d'enemies
         if (genere != 0) {
@@ -140,24 +137,14 @@ int main(int argc, char** argv) {
                 tmp = tmp->next;
             }
         }
-        
 
-        /* Test les collisions vaisseau/bg et enemy/bg */
-            
-            /*int collShip = checkCollision(shipBox, bgBox[k]);
+        drawMissiles(missiles);
+        moveMissiles(missiles);
 
-            collEnemies(&enemies, bgBox[k]);
+        collEnemiesMissiles(&missiles, &enemies);
+        collObstaclesMissiles(&missiles, &obstacles); 
 
-            if (collShip == 1) {
-                bgBox[k].pMaxX = 0;
-                bgBox[k].pMaxY = 0;
-                vies -= 1;
-                printf("nb vies : %d\n", vies);              
-            }*/
-
-                 
-
-             
+        drawAmmu(numbMissiles);
 
         /* Echange du front et du back buffer : mise à jour de la fenêtre */
         SDL_GL_SwapBuffers();
@@ -178,6 +165,14 @@ int main(int argc, char** argv) {
                     // appuie sur la touche "q" pour fermer la fenêtre 
                     if (e.key.keysym.sym == 113) {
                         loop = 0;
+                    }
+
+                    // touche espace
+                    if (e.key.keysym.sym == 32) {
+                        if (numbMissiles > 0) {
+                            createMissile(&missiles, shipPosY);
+                            numbMissiles --;
+                        }                        
                     }
 
                     break;

@@ -8,7 +8,7 @@
 
 void drawEnemy(float x, float y) {
     glBegin(GL_QUADS);
-        glColor3ub(150, 100, 0);
+        glColor3ub(150, 100, 0); //marron
         glVertex2f(x, y);
         glVertex2f(x + TAILLE_ENEMY, y);
         glVertex2f(x + TAILLE_ENEMY, y + TAILLE_ENEMY);
@@ -34,8 +34,8 @@ int createEnemy(EnemyList *list) {
 		return 0;
 	} else {
 		new->posX = 9;
-		float Y = rand() % 11; // random number de 0 à 10
-		new->posY = Y;
+		float y = rand() % 11; // random number de 0 à 10
+		new->posY = y;
 		new->sens = 1;
 
 		BoundingBox box;
@@ -43,8 +43,8 @@ int createEnemy(EnemyList *list) {
 		box.pMinX = 9;
 		box.pMaxX = 9 + TAILLE_ENEMY;
 
-		box.pMinY = Y;
-		box.pMaxY = Y + TAILLE_ENEMY;
+		box.pMinY = y;
+		box.pMaxY = y + TAILLE_ENEMY;
 
 		new->box = box;
 
